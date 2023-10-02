@@ -1,13 +1,13 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { v4 as uuidv4 } from "uuid";
 
 export interface Todo {
-  id: number;
+  id: string;
   text: string;
-  done: boolean;
 }
 
 export interface TodoColumn {
-  id: number;
+  id: string;
   name: string;
   items: Todo[];
 }
@@ -17,24 +17,72 @@ export interface TodoList {
 }
 
 export const initialState: TodoList = {
-  columns: [],
+  columns: [
+    {
+      id: uuidv4(),
+      name: "Backlog",
+      items: [
+        {
+          id: uuidv4(),
+          text: "Do the laundry",
+        },
+        {
+          id: uuidv4(),
+          text: "Buy milk",
+        },
+        {
+          id: uuidv4(),
+          text: "Clean the house",
+        },
+      ],
+    },
+    {
+      id: uuidv4(),
+      name: "In Progress",
+      items: [
+        {
+          id: uuidv4(),
+          text: "Learn Redux",
+        },
+      ],
+    },
+    {
+      id: uuidv4(),
+      name: "Done",
+      items: [
+        {
+          id: uuidv4(),
+          text: "Learn React",
+        },
+        {
+          id: uuidv4(),
+          text: "Learn Next.js",
+        },
+      ],
+    },
+  ],
 };
 
 export const TodoListSlice = createSlice({
   name: "todoList",
   initialState,
   reducers: {
-    addColumn: (state, action: PayloadAction<TodoColumn>) => {
-      state.columns.push(action.payload);
+    addColumn: (state) => {
+      const newColumn: TodoColumn = {
+        id: uuidv4(),
+        name: "New Column",
+        items: [],
+      };
+      state.columns.push(newColumn);
     },
-    removeColumn: (state, action: PayloadAction<number>) => {
+    removeColumn: (state, action: PayloadAction<string>) => {
       state.columns = state.columns.filter(
         (column) => column.id !== action.payload
       );
     },
     renameColumn: (
       state,
-      action: PayloadAction<{ id: number; name: string }>
+      action: PayloadAction<{ id: string; name: string }>
     ) => {
       const column = state.columns.find(
         (column) => column.id === action.payload.id
@@ -43,20 +91,24 @@ export const TodoListSlice = createSlice({
         column.name = action.payload.name;
       }
     },
-    addTodoToColumn: (
+    addNewTodoToColumn: (
       state,
-      action: PayloadAction<{ columnId: number; todo: Todo }>
+      action: PayloadAction<{ columnId: string }>
     ) => {
       const column = state.columns.find(
         (column) => column.id === action.payload.columnId
       );
       if (column) {
-        column.items.push(action.payload.todo);
+        const newTodo = {
+          id: uuidv4(),
+          text: "New Todo",
+        };
+        column.items.push(newTodo);
       }
     },
     removeTodoFromColumn: (
       state,
-      action: PayloadAction<{ columnId: number; todoId: number }>
+      action: PayloadAction<{ columnId: string; todoId: string }>
     ) => {
       const column = state.columns.find(
         (column) => column.id === action.payload.columnId
@@ -67,25 +119,9 @@ export const TodoListSlice = createSlice({
         );
       }
     },
-    toggleTodoInColumn: (
-      state,
-      action: PayloadAction<{ columnId: number; todoId: number }>
-    ) => {
-      const column = state.columns.find(
-        (column) => column.id === action.payload.columnId
-      );
-      if (column) {
-        const item = column.items.find(
-          (item) => item.id === action.payload.todoId
-        );
-        if (item) {
-          item.done = !item.done;
-        }
-      }
-    },
     renameTodoInColumn: (
       state,
-      action: PayloadAction<{ columnId: number; todoId: number; text: string }>
+      action: PayloadAction<{ columnId: string; todoId: string; text: string }>
     ) => {
       const column = state.columns.find(
         (column) => column.id === action.payload.columnId
